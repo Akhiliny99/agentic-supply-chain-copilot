@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  erp:
+    build: .
+    command: uvicorn erp.mock_erp:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+
+  gateway:
+    build: .
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    environment:
+      - ERP_BASE_URL=http://erp:8001
+      - LLM_PROVIDER=mock
+      - USE_REAL_GCP=false
+    ports:
+      - "8000:8000"
+    depends_on:
+      - erp
+
+  dashboard:
+    build: .
+    command: streamlit run dashboard/app.py --server.address 0.0.0.0 --server.port 8501
+    environment:
+      - GATEWAY_URL=http://gateway:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      - gateway
