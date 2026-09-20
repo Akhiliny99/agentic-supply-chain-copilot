@@ -1,13 +1,4 @@
-"""
-Audit trail — the JD's "responsible-AI documentation for autonomous
-systems" requirement. Every agent decision is logged with: which agent
-made it, what data sources it used, the outcome, guardrail result, and
-whether it was auto-applied or escalated to a human.
 
-Uses SQLite locally (stand-in for a BigQuery audit table — same schema,
-just swap write_rows()/read_rows() for the real BigQuery calls in
-pipeline/gcp_clients.py, which is exactly what USE_REAL_GCP does).
-"""
 import json
 import os
 import sqlite3
