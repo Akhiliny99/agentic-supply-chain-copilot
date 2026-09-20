@@ -1,14 +1,4 @@
-"""
-Mock ERP system — stands in for a real SAP / Oracle ERP REST layer.
 
-In a real deployment, this file is replaced by an ERP adapter (e.g. SAP OData
-services, Oracle Fusion REST API) behind the SAME interface used below:
-GET /inventory/{sku}, GET /orders/{sku}, GET/POST /pricing/{sku}.
-Keeping the interface identical means the agents in agents/ never need to
-change — only this adapter does. That's the integration boundary the JD
-calls out ("connect agents securely to ERP, data platform, and third-party
-tools").
-"""
 import random
 from datetime import datetime, timedelta
 
@@ -17,7 +7,6 @@ from pydantic import BaseModel
 
 app = FastAPI(title="Mock ERP", version="1.0")
 
-# --- seed data: a handful of SKUs with deterministic-ish history ---
 random.seed(42)
 SKUS = {
     "SKU-1042": {"name": "Industrial Bearing 40mm", "base_demand": 120, "unit_cost": 8.5},
