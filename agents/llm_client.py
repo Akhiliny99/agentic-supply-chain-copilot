@@ -1,10 +1,4 @@
-"""
-Pluggable LLM client. Default provider is `mock`: a deterministic,
-rule-based stand-in so the whole agent pipeline is runnable and testable
-with zero API keys. Set LLM_PROVIDER=groq or LLM_PROVIDER=vertex plus the
-matching credentials to use a real model — the agent code never changes,
-it only calls `complete()` below.
-"""
+
 import os
 import random
 
@@ -13,8 +7,7 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "mock").lower()
 
 def complete(system_prompt: str, user_prompt: str) -> str:
     if LLM_PROVIDER == "groq":
-        from groq import Groq  # pragma: no cover - needs real key
-
+        from groq import Groq  
         client = Groq(api_key=os.environ["GROQ_API_KEY"])
         resp = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -26,13 +19,12 @@ def complete(system_prompt: str, user_prompt: str) -> str:
         return resp.choices[0].message.content
 
     if LLM_PROVIDER == "vertex":
-        from vertexai.generative_models import GenerativeModel  # pragma: no cover
-
+        from vertexai.generative_models import GenerativeModel  
         model = GenerativeModel("gemini-2.5-pro")
         resp = model.generate_content(f"{system_prompt}\n\n{user_prompt}")
         return resp.text
 
-    # --- mock mode: deterministic reasoning stand-in ---
+ 
     return _mock_reasoning(system_prompt, user_prompt)
 
 
