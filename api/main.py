@@ -1,8 +1,4 @@
-"""
-Agent gateway API — the entry point that would sit in front of the agentic
-system in production, with the escalation queue and audit trail exposed for
-a human-in-the-loop review UI (see dashboard/app.py).
-"""
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 
