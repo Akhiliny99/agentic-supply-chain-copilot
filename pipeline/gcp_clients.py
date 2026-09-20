@@ -1,16 +1,4 @@
-"""
-GCP client layer: BigQuery (lakehouse), Pub/Sub (event bus), Vertex AI
-(model hosting).
 
-USE_REAL_GCP=false (default): everything runs against local stand-ins
-(SQLite for BigQuery, an in-process queue for Pub/Sub) so the whole project
-runs with zero cloud account. This is intentional — an interviewer can run
-it in 30 seconds.
-
-USE_REAL_GCP=true: the real google-cloud-* clients below take over. The
-calling code in pipeline/ingest.py and agents/ never changes either way —
-it only talks to the functions in this file.
-"""
 import json
 import os
 import sqlite3
@@ -25,17 +13,14 @@ BQ_DATASET = os.getenv("BQ_DATASET", "supply_chain_copilot")
 PUBSUB_TOPIC = os.getenv("PUBSUB_TOPIC", "agent-events")
 LOCAL_LAKEHOUSE_PATH = Path(os.getenv("AUDIT_DB_PATH", "./audit_trail.db")).parent / "lakehouse.db"
 
-# ---------------------------------------------------------------------------
-# Pub/Sub (event ingestion from ERP / plant systems into the pipeline)
-# ---------------------------------------------------------------------------
+
 _local_queue: "Queue[dict]" = Queue()
 
 
 def publish_event(payload: dict) -> None:
     payload = {**payload, "published_at": datetime.utcnow().isoformat()}
     if USE_REAL_GCP:
-        from google.cloud import pubsub_v1  # pragma: no cover - needs real creds
-
+        from google.cloud import pubsub_v1  
         publisher = pubsub_v1.PublisherClient()
         topic_path = publisher.topic_path(GCP_PROJECT_ID, PUBSUB_TOPIC)
         publisher.publish(topic_path, json.dumps(payload).encode("utf-8"))
@@ -52,9 +37,6 @@ def drain_events() -> list[dict]:
     return events
 
 
-# ---------------------------------------------------------------------------
-# BigQuery (lakehouse storage for transformed events + decisions)
-# ---------------------------------------------------------------------------
 def _local_conn():
     LOCAL_LAKEHOUSE_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(LOCAL_LAKEHOUSE_PATH)
@@ -73,7 +55,7 @@ def write_rows(table_name: str, rows: list[dict]) -> None:
     if not rows:
         return
     if USE_REAL_GCP:
-        from google.cloud import bigquery  # pragma: no cover - needs real creds
+        from google.cloud import bigquery  
 
         client = bigquery.Client(project=GCP_PROJECT_ID)
         table_ref = f"{GCP_PROJECT_ID}.{BQ_DATASET}.{table_name}"
@@ -93,7 +75,7 @@ def write_rows(table_name: str, rows: list[dict]) -> None:
 
 def read_rows(table_name: str, limit: int = 100) -> list[dict]:
     if USE_REAL_GCP:
-        from google.cloud import bigquery  # pragma: no cover - needs real creds
+        from google.cloud import bigquery  
 
         client = bigquery.Client(project=GCP_PROJECT_ID)
         query = f"SELECT * FROM `{GCP_PROJECT_ID}.{BQ_DATASET}.{table_name}` LIMIT {limit}"
@@ -108,19 +90,16 @@ def read_rows(table_name: str, limit: int = 100) -> list[dict]:
     return rows
 
 
-# ---------------------------------------------------------------------------
-# Vertex AI (forecasting model hosting)
-# ---------------------------------------------------------------------------
+
 def vertex_predict(model_name: str, instances: list[dict]) -> Any:
     """Real path calls a deployed Vertex AI endpoint. Local path calls the
     same rule-based forecaster used by agents/llm_client.py's mock mode, so
     behaviour is consistent whichever mode you run in."""
     if USE_REAL_GCP:
-        from google.cloud import aiplatform  # pragma: no cover - needs real creds
-
+        from google.cloud import aiplatform  
         aiplatform.init(project=GCP_PROJECT_ID)
         endpoint = aiplatform.Endpoint(model_name)
         return endpoint.predict(instances=instances)
-    from agents.forecaster_agent import naive_forecast  # local import avoids cycle
+    from agents.forecaster_agent import naive_forecast  
 
     return [naive_forecast(inst["history"]) for inst in instances]
