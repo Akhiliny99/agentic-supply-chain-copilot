@@ -1,16 +1,10 @@
-"""Forecaster agent: predicts near-term demand from ERP order history.
 
-Scoped (via MCP) to read-only tools: get_inventory, get_orders. It cannot
-touch pricing — least-privilege by design.
-"""
 from agents.llm_client import complete
 from agents.mcp_server import call_tool
 
 
 def naive_forecast(history: list[dict], horizon: int = 7) -> float:
-    """Simple moving-average forecast — deterministic, no LLM needed for the
-    numeric prediction itself. The LLM is used for the *reasoning/narrative*
-    layer on top, which is where hallucination risk actually lives."""
+   
     if not history:
         return 0.0
     recent = [h["units_sold"] for h in history[-14:]]
