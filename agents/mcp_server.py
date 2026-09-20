@@ -1,13 +1,4 @@
-"""
-MCP-style tool server: exposes ERP operations as callable tools, and
-enforces least-privilege scoping per agent — the "agent-to-system
-permissions" piece of the JD.
 
-This is a simplified stand-in for a real MCP server (JSON-RPC over stdio/SSE)
-using the same tool-registration pattern: each tool is a plain function with
-a name, description, and schema, and every call is checked against the
-calling agent's declared scope before it runs.
-"""
 import os
 from dataclasses import dataclass
 from typing import Callable
@@ -22,7 +13,7 @@ class Tool:
     name: str
     description: str
     fn: Callable
-    requires_scope: str  # "read" or "write"
+    requires_scope: str  
 
 
 class PermissionError_(Exception):
@@ -58,13 +49,12 @@ TOOL_REGISTRY: dict[str, Tool] = {
     "update_pricing": Tool("update_pricing", "Write a new price for a SKU", _update_pricing, "write"),
 }
 
-# Least-privilege matrix: which agent may call which tool.
-# Forecaster and Supply Optimizer never get write access to pricing.
+
 AGENT_SCOPES: dict[str, list[str]] = {
     "forecaster": ["get_inventory", "get_orders"],
     "pricer": ["get_pricing", "get_orders", "update_pricing"],
     "supply_optimizer": ["get_inventory", "get_orders"],
-    "moderator": ["get_inventory", "get_orders", "get_pricing"],  # read-only oversight
+    "moderator": ["get_inventory", "get_orders", "get_pricing"],  
 }
 
 
