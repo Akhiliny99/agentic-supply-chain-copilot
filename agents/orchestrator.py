@@ -1,12 +1,4 @@
-"""
-LangGraph orchestrator: Forecaster -> Pricer & Supply Optimizer (parallel,
-both depend on forecast) -> Guardrail -> apply-or-escalate.
 
-This is the "autonomous agents for demand forecasting, pricing intelligence,
-and supply chain optimization" piece of the JD, wired as an actual
-multi-node agent graph rather than a linear script — matching the
-plan/code/verify-style graphs already in this candidate's other projects.
-"""
 from typing import TypedDict
 
 from langgraph.graph import StateGraph, END
@@ -65,7 +57,7 @@ def node_apply_or_escalate(state: CycleState) -> CycleState:
                 call_tool("pricer", "update_pricing", sku=sku, new_price=proposed,
                           reason=state["pricing"]["reason"])
                 outcome = f"applied: price -> {proposed}"
-            except Exception as e:  # ERP itself refused it — belt and braces
+            except Exception as e:  
                 outcome = f"erp_rejected: {e}"
         else:
             outcome = "no_change_needed"
@@ -103,7 +95,7 @@ def build_graph():
 
     graph.set_entry_point("ingest")
     graph.add_edge("ingest", "forecast_step")
-    # pricing and supply both fan out from forecast, fan back in at guardrail
+   
     graph.add_edge("forecast_step", "pricing_step")
     graph.add_edge("forecast_step", "supply_step")
     graph.add_edge("pricing_step", "guardrail_step")
