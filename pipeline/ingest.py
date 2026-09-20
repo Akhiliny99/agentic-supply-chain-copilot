@@ -1,14 +1,4 @@
-"""
-Ingestion pipeline: ERP data -> Pub/Sub (event bus) -> transform (stand-in
-for a Dataflow job) -> BigQuery (lakehouse).
 
-This is the "data pipelines integrating enterprise ERP systems with cloud
-and lakehouse platforms" piece of the JD. In production this transform step
-would be a real Apache Beam / Dataflow job; here it's a plain Python
-function so the whole thing runs without a Dataflow cluster, but it's
-structured as a discrete, testable transform stage so swapping it for a
-Beam pipeline later is a drop-in replacement, not a rewrite.
-"""
 import os
 
 import httpx
