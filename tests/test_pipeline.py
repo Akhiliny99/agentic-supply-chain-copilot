@@ -1,9 +1,4 @@
-"""
-Basic tests — run with: pytest tests/
 
-Requires the mock ERP running on localhost:8001 for the ingest/agent tests
-(test_guardrail_logic runs standalone with no dependencies).
-"""
 import pytest
 
 from guardrails.monitor import check_cycle, MAX_PRICE_MOVE_PCT
