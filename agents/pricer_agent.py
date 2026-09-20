@@ -1,8 +1,4 @@
-"""Pricer agent: recommends a price adjustment from current margin +
-demand signal. This is the only agent scoped for the write tool
-(update_pricing) — and even it doesn't call it directly; the write only
-happens after the guardrail/monitor approves (see agents/orchestrator.py).
-"""
+
 from agents.llm_client import complete
 from agents.mcp_server import call_tool
 
@@ -14,7 +10,7 @@ def run(sku: str, forecast_result: dict) -> dict:
     unit_cost = pricing["unit_cost"]
     min_price = round(unit_cost * (1 + pricing["min_margin_pct"] / 100), 2)
 
-    # simple elasticity heuristic: tight stock -> nudge price up, excess -> nudge down
+
     if forecast_result["stockout_risk"]:
         proposed_price = round(current_price * 1.05, 2)
         reason = "Stockout risk detected — demand outpacing supply, nudging price up 5%."
